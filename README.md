@@ -27,8 +27,11 @@ cmake -G "Ninja" -D CMAKE_BUILD_TYPE=Release ../test-console
 cmake --build .
 ```
 > Note: The above example uses [Ninja](https://ninja-build.org/), but you can use another generator.
+
+### Building with Qt
+Coming soon!
  
-# Running the code
+## Running the code
 Once built, the executable will be in the *build/bin* directory (possibly in a *Release* sub-directory on Windows).
   
 > Note: This code is only for me to test a console implementation, so isn't properly tested here. It may or not work on your system! However, if it doesn't work, let me know the problem so I can improve it!
