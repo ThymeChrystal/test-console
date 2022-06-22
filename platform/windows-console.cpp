@@ -25,6 +25,13 @@
  * SOFTWARE.
  */
 
+/*
+ * This version of the getUserInput() is and related
+ * functions is based on:
+ *   https://docs.microsoft.com/en-us/windows/console/reading-input-buffer-events
+ *
+ */
+
 // test-console includes
 #include <console.h>
 
