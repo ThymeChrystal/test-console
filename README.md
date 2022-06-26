@@ -5,6 +5,8 @@ Initially, `std::cin` was used to get the input, but this requires the user to p
   
 Therefore, I wanted to implement a console that can handle one character at a time, and this is a testbed for that console. Hopefully, something useful comes out of it!
   
+> Note: It's more intended as a How-To than creating something you can directly plug into your code, but you may be able to use most of it as-is.
+  
 I intend to implement Windows, Linux, MacOS and Qt based versions.
 
 The aim is to make sure all platform decisions are pushed to the configuration (CMake) rather than needing lots of `#if` statements throughout the C++ code.
