@@ -30,11 +30,24 @@
 
 // STL includes
 #include <iostream>
+#include <exception>
 
 // The main program
 int main(int argc, char** argv)
 {
-  TestConsole cons("test-console ->");
-  return cons.start();
+  // Return an error if we don't complete the console
+  int ret_val = 1;
+  try
+  {
+    TestConsole cons("test-console ->");
+    ret_val = cons.start();
+  }
+  catch (std::exception& e)
+  {
+    std::cout << "An error occurred in the console:\n" << e.what() << "\n";
+  }
+
+  return ret_val;
+  
 }
 

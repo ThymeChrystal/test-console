@@ -27,8 +27,12 @@
 
 if (WIN32)
   set(PLATFORM_SOURCES platform/windows-console.cpp PARENT_SCOPE)
+  set(PLATFORM_HEADERS platform/windows-console.h PARENT_SCOPE)
+  set(PLATFORM_INCLUDE "windows-console.h" PARENT_SCOPE)
 elseif(UNIX)
   set(PLATFORM_SOURCES platform/linux-console.cpp PARENT_SCOPE)
+  set(PLATFORM_HEADERS platform/linux-console.h PARENT_SCOPE)
+  set(PLATFORM_INCLUDE "linux-console.h" PARENT_SCOPE)
 else()
   message(SEND_ERROR "The platform you are using is not supported yet.")
 endif()

@@ -1,5 +1,5 @@
 /* 
- * File: console.cpp
+ * File: platform/windows-console.h
  * Author: Thyme Chrystal
  *
  * MIT License
@@ -25,22 +25,27 @@
  * SOFTWARE.
  */
 
-// test-console includes
-#include "console.h"
+#pragma once
 
-// STL includes
-#include <iostream>
+// MS includes
+#include <Windows.h>
 
-TestConsole::TestConsole(const std::string& prompt) : prompt_{ prompt }
+// Define a struct to hold variables needed by the windows console
+struct PlatformVariables
 {
-  initialisePlatformVariables();
-}
+  DWORD old_console_mode;
+  HANDLE stdcin_handle;
+  
+  // Buffer size for input events
+  static const unsigned int input_buffer_size = 128;
+};
 
-int TestConsole::start()
+// Enums for return types from functions to indicate
+// the state
+enum class ReturnValue
 {
-  // Don't do anything exciting yet!
-  std::cout << prompt_ << " ";
-  std::string input = getUserInput();
-  std::cout << "You typed: " << input << "\n";
-  return 0;
-}
+  success = 0,
+  enter_press,
+  error,
+  undefined
+};

@@ -27,21 +27,35 @@
 
 // test-console includes
 #include <console.h>
+#include <platform/linux-console.h>
 
 // STL includes
 #include <iostream>
 #include <string>
 
-const int MAX_LINE_LENGTH = 1024;
+// Initilalise the platform variables
+void TestConsole::initialisePlatformVariables()
+{
+  // Do nothing as yet for Linux
+}
 
 // For now, implement with std::cin
 // This will have the linux specific code eventually
 std::string TestConsole::getUserInput()
 {
-  char line[MAX_LINE_LENGTH + 1];
-  std::cin.getline(line, MAX_LINE_LENGTH);
+  char line[PlatformVariables::maximum_line_length];
+  std::cin.getline(line, PlatformVariables::maximum_line_length);
   std::string inp{line};
   inp += " on Linux!";
   
   return inp;
 }
+
+// Handle any resources on closing
+void TestConsole::cleanUpConsole()
+{
+  // Do nothing at the moment on Linux
+}
+
+
+
