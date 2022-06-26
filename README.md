@@ -1,11 +1,13 @@
 # A test 'console/terminal'
 For some of my other projects (currently private until they have a decent amount of functionality) I wanted a console for entering commands within the program.
 
-Initially, `std::cin` was used to get the input, but this requires the user to press *<Enter>* before the command can be processed. However, this means that you can't retrieve a history with up/down arrows, and you can't implement auto completion with *<Tab>*.
+Initially, `std::cin` was used to get the input, but this requires the user to press *<Enter>* before the command can be processed. This means that you can't retrieve a history with up/down arrows, and you can't implement auto completion with *<Tab>*.
   
 Therefore, I wanted to implement a console that can handle one character at a time, and this is a testbed for that console. Hopefully, something useful comes out of it!
   
-I also intend to implement a Qt based version.
+I intend to implement Windows, Linux, MacOS and Qt based versions.
+
+The aim is to make sure all platform decisions are pushed to the configuration (CMake) rather than needing lots of `#if` statements throughout the C++ code.
   
 ## Getting the code
 You can get the code with:
