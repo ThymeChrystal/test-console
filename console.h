@@ -25,6 +25,10 @@
  * SOFTWARE.
  */
 
+// Test console includes
+#include <console-platform.h>
+
+// STL includes
 #include <string>
 
 class TestConsole
@@ -32,18 +36,28 @@ class TestConsole
 public:
 
   // The test console constructor takes the prompt to show as a string
-  TestConsole(const std::string& prompt) : prompt_{prompt} {}
-  ~TestConsole() = default;
+  TestConsole(const std::string& prompt);
+  ~TestConsole() { cleanUpConsole(); };
 
   // Calling this starts the console
   int start();
 
 private:
+  // Initialise the platform variables for this class
+  // This is implemented specific to the platform
+  void initialisePlatformVariables();
+
   // Get the input from the user
   // This is implemented specific to the platform
   std::string getUserInput();
 
+  // Clean up the platform specific console
+  // This is implemented specific to the platform
+  void cleanUpConsole();
+
   // The prompt to display
   std::string prompt_;
 
+  // Variables needed by the platform specific code
+  PlatformVariables platform_vars_;
 };

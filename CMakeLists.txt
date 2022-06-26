@@ -41,10 +41,13 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 # Set up include directories
-include_directories(${CMAKE_SOURCE_DIR})
+include_directories(${CMAKE_SOURCE_DIR} ${CMAKE_BINARY_DIR})
 
 # Include the platform specific stuff
 add_subdirectory(platform)
+
+# Generate the appropriate configuration for include
+configure_file(${CMAKE_SOURCE_DIR}/platform/console-platform.h.in console-platform.h)
 
 # Create the executable
 set(TEST_CONSOLE_SOURCES
@@ -55,6 +58,8 @@ set(TEST_CONSOLE_SOURCES
 
 set(TEST_CONSOLE_HEADERS
   console.h
+  ${CMAKE_BINARY_DIR}/console-platform.h
+  ${PLATFORM_HEADERS}
 )
 
 source_group("Header Files" ${TEST_CONSOLE_HEADERS})

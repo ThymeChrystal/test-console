@@ -1,5 +1,5 @@
 /* 
- * File: console.cpp
+ * File: platform/linux-console.h
  * Author: Thyme Chrystal
  *
  * MIT License
@@ -25,22 +25,10 @@
  * SOFTWARE.
  */
 
-// test-console includes
-#include "console.h"
+#pragma once
 
-// STL includes
-#include <iostream>
-
-TestConsole::TestConsole(const std::string& prompt) : prompt_{ prompt }
+struct PlatformVariables
 {
-  initialisePlatformVariables();
-}
-
-int TestConsole::start()
-{
-  // Don't do anything exciting yet!
-  std::cout << prompt_ << " ";
-  std::string input = getUserInput();
-  std::cout << "You typed: " << input << "\n";
-  return 0;
-}
+  // The length of a line
+  static const unsigned int maximum_line_length = 1024;
+};
