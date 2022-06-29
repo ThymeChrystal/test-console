@@ -27,8 +27,23 @@
 
 #pragma once
 
+#include <termios.h>
+
 struct PlatformVariables
 {
+  struct termios old_state;
+  
   // The length of a line
   static const unsigned int maximum_line_length = 1024;
 };
+
+// Enums for return types from functions to indicate
+// the state
+enum class ReturnValue
+{
+  success = 0,
+  enter_press,
+  error,
+  undefined
+};
+

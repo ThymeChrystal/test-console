@@ -26,7 +26,7 @@
  */
 
 /*
- * This version of the getUserInput() and related
+ * This Windows version of the console input and related
  * functions are based on:
  *   https://docs.microsoft.com/en-us/windows/console/reading-input-buffer-events
  *
