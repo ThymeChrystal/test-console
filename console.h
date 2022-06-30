@@ -30,34 +30,64 @@
 
 // STL includes
 #include <string>
+#include <tuple>
+#include <vector>
+
+//! Indicate the type of key press
+enum class KeyPressed
+{
+  alphanum,    /*!< A printable character was typed */
+  enter,       /*!< Enter (or related key) was pressed */
+  backspace,   /*!< Backspace was pressed */
+  undefined,   /*!< The key press was not something we handle */
+  error        /*!< If there is a problem with the key reader */
+};
 
 class TestConsole
 {
 public:
 
-  // The test console constructor takes the prompt to show as a string
+  /*!The test console constructor
+   * \param prompt takes the string to show as the console prompt
+   */
   TestConsole(const std::string& prompt);
+
+  /*! The test console destructor
+   * \brief Calls the platform dependent code to clean up 
+   */
   ~TestConsole() { cleanUpConsole(); };
 
-  // Calling this starts the console
+  /*! Start the console
+   * \brief Starts the console, shows the prompt and waits for user input
+   * \return 0 if the console terminated cleanly, non-zero if there was an error
+   */
   int start();
 
 private:
-  // Initialise the platform variables for this class
-  // This is implemented specific to the platform
+  /*! Initialise the platform specific variables for this class
+   * /note This is implemented specific to the platform
+   */
   void initialisePlatformVariables();
 
-  // Get the input from the user
-  // This is implemented specific to the platform
-  std::string getUserInput();
+  /* Get the next line of input from the user
+   * \return The line entered by the user at the command line
+   */
+  std::string getUserInputLine();
 
-  // Clean up the platform specific console
-  // This is implemented specific to the platform
+  /*! Get the next keypress
+   * \returns A vector containing the key types and a char. If the key isn't alphanumeric, the char will be '\0'
+   * \note This is implemented specific to the platform
+   */
+  std::vector<std::tuple<KeyPressed, char>> getKeyPresses();
+
+  /*! Clean up the platform specific console
+   * \note This is implemented specific to the platform
+   */
   void cleanUpConsole();
 
-  // The prompt to display
+  //! The prompt to display
   std::string prompt_;
 
-  // Variables needed by the platform specific code
+  //! Variables needed by the platform specific code
   PlatformVariables platform_vars_;
 };

@@ -43,60 +43,40 @@
 #include <iostream>
 #include <string>
 #include <exception>
+#include <vector>
+#include <tuple>
 
 // Functions to handle the events
 namespace
 {
 
   // Handle the key press events
-  ReturnValue HandleConsoleKeyEvent(KEY_EVENT_RECORD ke, std::string& line)
+  std::tuple<KeyPressed, char, unsigned int> HandleConsoleKeyEvent(KEY_EVENT_RECORD ke)
   {
-    ReturnValue ret = ReturnValue::success;
-
     // Handle keys if they are down
     if (ke.bKeyDown)
     {
       // If it's in the ASCII printable range, print it (maybe multiple times
       // based on repeat count)
       if (ke.uChar.AsciiChar >= 32 && ke.uChar.AsciiChar <= 127)
-      {
-        std::string val = std::string(ke.wRepeatCount, ke.uChar.AsciiChar);
-        line += val;
-        std::cout << val;
-      }
-
+        return std::make_tuple(KeyPressed::alphanum, ke.uChar.AsciiChar, ke.wRepeatCount);
+      
       // Handle a backspace press
       if (ke.wVirtualKeyCode == 8)
-      {
-        // Remove the last character fom the display and the line
-        // we're building
-        if (!line.empty())
-        {
-          line.pop_back();
-          std::cout << "\b \b";
-        }
-        else
-          // There's nothing to delete, so make a sound!
-          std::cout << "\a";
-      }
+        return std::make_tuple(KeyPressed::backspace, '\0', ke.wRepeatCount);
 
       // Enter pressed, so finish this input line
       if (ke.wVirtualKeyCode == 13)
-      {
-        std::cout << "\n";
-        ret = ReturnValue::enter_press;
-      }
+        return std::make_tuple(KeyPressed::enter, '\0', ke.wRepeatCount);
     }
    
-    return ret;
+    return std::make_tuple(KeyPressed::undefined, '\0', 0);
   }
 
   // Handle resize events - no plans to do anything with this at the moment
-  ReturnValue HandleConsoleResizeEvent(WINDOW_BUFFER_SIZE_RECORD wbs)
+  void HandleConsoleResizeEvent(WINDOW_BUFFER_SIZE_RECORD wbs)
   {
-    ReturnValue ret = ReturnValue::success;
     std::cout << "Resize event!\n";
-    return ret;
   }
 }
 
@@ -116,13 +96,10 @@ void TestConsole::initialisePlatformVariables()
 }
 
 // This handles the windows specific code
-std::string TestConsole::getUserInput()
+std::vector<std::tuple<KeyPressed, char>> TestConsole::getKeyPresses()
 {
-  // The line of inputted key strokes
-  std::string line{ "" };
-
-  // The current position of the 'cursor' within 'line'
-  unsigned int cursor_pos = 0;
+  // The return value
+  std::vector<std::tuple<KeyPressed, char>> ret;
 
   // Buffer to get events from the queue
   INPUT_RECORD event_buffer[PlatformVariables::input_buffer_size];
@@ -130,46 +107,41 @@ std::string TestConsole::getUserInput()
   // The number of events returned in the buffer
   DWORD n_events_read = 0;
   
-  // Keep getting inputs until <Enter> is pressed
-  ReturnValue ret = ReturnValue::undefined;
-
-  while (ret != ReturnValue::enter_press)
-  {
-    // Get any queued events, or wait for one
-    if (!ReadConsoleInput(platform_vars_.stdcin_handle,
-      event_buffer,
-      PlatformVariables::input_buffer_size,
-      &n_events_read))
+  // Get any queued events, or wait for one
+  if (!ReadConsoleInput(platform_vars_.stdcin_handle,
+    event_buffer,
+    PlatformVariables::input_buffer_size,
+    &n_events_read))
       throw std::runtime_error("ReadConsoleInput failed!");
 
-    // Process each event
-    for (unsigned int i = 0; i < n_events_read; ++i)
+  // Process each event
+  for (unsigned int i = 0; i < n_events_read; ++i)
+  {
+    switch (event_buffer[i].EventType)
     {
-      switch (event_buffer[i].EventType)
+    case KEY_EVENT: // Handle keyboard inputs
       {
-      case KEY_EVENT: // Handle keyboard inputs
-        ret = HandleConsoleKeyEvent(event_buffer[i].Event.KeyEvent, line);
-        break;
-      case MOUSE_EVENT: // Handle mouse inputs
-        // Mouse events don't seem to be active in console apps, so ignore
-        break;
-      case WINDOW_BUFFER_SIZE_EVENT: // Handle windows resize events
-        ret = HandleConsoleResizeEvent(event_buffer[i].Event.WindowBufferSizeEvent);
-        break;
-      case FOCUS_EVENT: // Windows has gained or lost focus
-        // Ignore for now
-      case MENU_EVENT:  // Menu has been clicked
-        // Ignore for now
-      default:
-        // Silently ignore unknown events - user could have some wierd input device!
+        auto [kp, c, rep] = HandleConsoleKeyEvent(event_buffer[i].Event.KeyEvent);
+        ret.insert(ret.end(), rep, std::make_tuple(kp, c));
         break;
       }
+    case MOUSE_EVENT: // Handle mouse inputs
+      // Mouse events don't seem to be active in console apps, so ignore
+      break;
+    case WINDOW_BUFFER_SIZE_EVENT: // Handle windows resize events
+      HandleConsoleResizeEvent(event_buffer[i].Event.WindowBufferSizeEvent);
+      break;
+    case FOCUS_EVENT: // Windows has gained or lost focus
+      // Ignore for now
+    case MENU_EVENT:  // Menu has been clicked
+      // Ignore for now
+    default:
+      // Silently ignore unknown events - user could have some wierd input device!
+      break;
     }
   }
   
-  line += " on Windows!";
-  
-  return line;
+  return ret;
 }
 
 // Handle any resources on closing
