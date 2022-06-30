@@ -52,7 +52,8 @@ int TestConsole::start()
     std::string input{ "" };
     while (input != "quit")
     {
-      std::cout << prompt_ << " ";
+      // Flush to make sure the prompt is shown
+      std::cout << prompt_ << " " << std::flush;
       input = getUserInputLine();
       std::cout << "You typed: " << input << "\r\n";
     }
