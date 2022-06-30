@@ -1,3 +1,5 @@
+[![CMake build](https://github.com/ThymeChrystal/test-console/actions/workflows/cmake-build.yml/badge.svg)](https://github.com/ThymeChrystal/test-console/actions/workflows/cmake-build.yml)
+
 # A test 'console/terminal'
 For some of my other projects (currently private until they have a decent amount of functionality) I wanted a console for entering commands within the program.
 
