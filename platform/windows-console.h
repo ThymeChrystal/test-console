@@ -30,22 +30,15 @@
 // MS includes
 #include <Windows.h>
 
-// Define a struct to hold variables needed by the windows console
+//! Define a struct to hold variables needed by the windows console
 struct PlatformVariables
 {
+  //! Save the original console mode
   DWORD old_console_mode;
+
+  //! A handle to stdin
   HANDLE stdcin_handle;
   
-  // Buffer size for input events
+  //! Buffer size for input events
   static const unsigned int input_buffer_size = 128;
-};
-
-// Enums for return types from functions to indicate
-// the state
-enum class ReturnValue
-{
-  success = 0,
-  enter_press,
-  error,
-  undefined
 };

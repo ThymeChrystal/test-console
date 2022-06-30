@@ -62,42 +62,27 @@
 #include <exception>
 #include <cerrno>
 #include <cstring>
+#include <vector>
+#include <tuple>
 
 namespace
 {
-  ReturnValue handleConsoleKeyEvent(const std::string& input, std::string& line)
+  std::tuple<KeyPressed, char> handleConsoleKeyEvent(const std::string& input)
   {
-    ReturnValue ret = ReturnValue::success;
+    std::tuple<KeyPressed, char> ret;
 
     // For now, just check the first character, because we're not
     // interested in keys that produce multiple values yet
 
-    // Handle ASCII characters
-    if (input[0] >= 32 && input[0] <= 126)
-    {
-      std::cout << input[0];
-      line += input[0];
-    }
-    else if (input[0] == 13)
-    {
-      std::cout << "\n\r";
-      ret = ReturnValue::enter_press;
-    }
-    else if (input[0] == 127)
-    {
-      // Remove the last chracter of the line
-      // we're building
-      if (!line.empty())
-      {
-        line.pop_back();
-        std::cout << "\b \b";
-      }
-      else
-        // There's nothing to delete, so make a sound
-        std::cout << "\a";
-    }
+    if (input[0] >= 32 && input[0] <= 126) // ASCII printable characters
+      return std::make_tuple(KeyPressed::alphanum, input[0]);
+    else if (input[0] == 13)               // Return pressed
+      return std::make_tuple(KeyPressed::enter, '\0');
+    else if (input[0] == 127)              // Backspace
+      return std::make_tuple(KeyPressed::backspace, '\0');
 
-    return ret;
+    // Return that we don't know the code
+    return std::make_tuple(KeyPressed::undefined, '\0');
   }
 }
 
@@ -137,38 +122,29 @@ void TestConsole::initialisePlatformVariables()
 }
 
 // This has the linux specific code
-std::string TestConsole::getUserInput()
+std::vector<std::tuple<KeyPressed, char>> TestConsole::getKeyPresses()
 {
-  // The line of inputted key strokes
-  std::string line{ "" };
+  // The return value
+  std::vector<std::tuple<KeyPressed, char>> ret;
 
-  ReturnValue ret = ReturnValue::undefined;
+  int n_bytes{0};
+  int res={0};
 
-  while (ret != ReturnValue::enter_press)
+  while (!n_bytes)
   {
-    int n_bytes{0};
-    int res={0};
-
-    // Make sure the prompt is shown
-    std::cout << std::flush;
-    while (!n_bytes)
-    {
-      res = ioctl(0, FIONREAD, &n_bytes);
-      if (res < 0)
-        throw std::runtime_error(std::string("ioctl call failed: ") + std::strerror(errno));
-    }
-
-    std::string inp{ "" };
-    for (int i=0; i<n_bytes; ++i)
-    {
-      inp += (char)getchar();
-    }
-    ret = handleConsoleKeyEvent(inp, line);
+    res = ioctl(0, FIONREAD, &n_bytes);
+    if (res < 0)
+      throw std::runtime_error(std::string("ioctl call failed: ") + std::strerror(errno));
   }
+
+  std::string inp{ "" };
+  for (int i=0; i<n_bytes; ++i)
+  {
+    inp += (char)getchar();
+  }
+  ret.push_back(handleConsoleKeyEvent(inp));
   
-  line += " on Linux!\r";
-  
-  return line;
+  return ret;
 }
 
 // Handle any resources on closing

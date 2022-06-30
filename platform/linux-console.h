@@ -29,21 +29,9 @@
 
 #include <termios.h>
 
+//! Define a struct to hold variables needed by the windows console
 struct PlatformVariables
 {
+  //! Save the original console mode
   struct termios old_state;
-  
-  // The length of a line
-  static const unsigned int maximum_line_length = 1024;
 };
-
-// Enums for return types from functions to indicate
-// the state
-enum class ReturnValue
-{
-  success = 0,
-  enter_press,
-  error,
-  undefined
-};
-

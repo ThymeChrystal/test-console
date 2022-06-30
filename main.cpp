@@ -44,7 +44,10 @@ int main(int argc, char** argv)
   }
   catch (std::exception& e)
   {
-    std::cout << "An error occurred in the console:\n" << e.what() << "\n";
+    // Note: we need \r and \n throughout the code as the
+    //       state of the console on Linux requires both
+    //       to do what we expect of \n normally
+    std::cout << "An error occurred in the console:\r\n" << e.what() << "\r\n";
   }
 
   return ret_val;
