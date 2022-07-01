@@ -72,6 +72,9 @@ std::string TestConsole::getUserInputLine()
   // The line the user is entering
   std::string line{ "" };
 
+  // Keep track of where the cursor is in the input line
+  std::string::size_type cursor_pos = 0;
+
   KeyPressed key_pressed = KeyPressed::undefined;
 
   while (key_pressed != KeyPressed::enter)
@@ -96,19 +99,85 @@ std::string TestConsole::getUserInputLine()
       {
       case KeyPressed::alphanum:
         {
+        // Get the char and print it
           char c = std::get<1>(k);
           std::cout << c;
-          line += c;
+
+          // If we're not at the end of the string, print out the rest of
+          // the string and insert the char in the right place
+          if (cursor_pos != line.size())
+          {
+            std::cout << line.substr(cursor_pos);
+            line.insert(cursor_pos, 1, c);
+
+            // Move the cursor back to where it was
+            std::cout << std::string(line.size() - (cursor_pos+1), '\b');
+          }
+          else  // If we are at the end, just add the char
+            line += c;
+          ++cursor_pos; 
           break;
         }
       case KeyPressed::backspace:
-        if (!line.empty())
+        // We can't delete if there's nothing there
+        if (!line.empty() && cursor_pos != 0)
         {
-          std::cout << "\b \b";
-          line.pop_back();
+          // If the cursor is in the middle of the line, it's more complicated!
+          if (cursor_pos != line.size())
+          {
+            // Remove the char deleted from the display and line string
+            std::cout << "\b" << line.substr(cursor_pos) + " ";
+            line.erase(cursor_pos-1, 1);
+
+            // Move the cursor back one space (remembering the space we put on the end)
+            std::cout << std::string(line.size() - (cursor_pos-2), '\b');
+          }
+          else
+          {
+            // Move back, erase the last character and move back again
+            // Also remove the last character of the line string
+            std::cout << "\b \b";
+            line.pop_back();
+          }
+          --cursor_pos;
         }
         else
           std::cout << "\a"; // Sound a bell as backspace is invalid
+        break;
+      case KeyPressed::leftarrow:
+        if (cursor_pos > 0)
+        {
+          // Move the cursor backwards
+          std::cout << "\b";
+          --cursor_pos;
+        }
+        else
+          std::cout << "\a"; // Sound a bell as left arrow can't move further back
+        break;
+      case KeyPressed::rightarrow:
+        // Check the cursor is not at the end
+        if (cursor_pos != line.size())
+        {
+          // Output the character at the current position to move the cursor forward
+          std::cout << line[cursor_pos];
+          ++cursor_pos;
+        }
+        else
+          std::cout << "\a";
+        break;
+      case KeyPressed::del:
+        // Check we're not at the end of the string
+        if (cursor_pos != line.size())
+        {
+          // Remove the character from the line, and output the rest of the rest
+          // of the string to remove the character, then move the cursor back to
+          // where it was
+          line.erase(cursor_pos, 1);
+          std::cout << line.substr(cursor_pos) << " " 
+            << std::string(line.size() - (cursor_pos - 1), '\b');
+        }
+        else
+          std::cout << "\a";
         break;
       case KeyPressed::error:
         throw std::runtime_error("There was an error when processing key inputs");

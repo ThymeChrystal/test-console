@@ -32,6 +32,7 @@
 #include <string>
 #include <tuple>
 #include <vector>
+#include <map>
 
 //! Indicate the type of key press
 enum class KeyPressed
@@ -39,6 +40,9 @@ enum class KeyPressed
   alphanum,    /*!< A printable character was typed */
   enter,       /*!< Enter (or related key) was pressed */
   backspace,   /*!< Backspace was pressed */
+  del,         /*!< The Delete (or Del) key was pressed */
+  leftarrow,   /*!< The left arrow key was pressed */
+  rightarrow,  /*!< The right arrow key was pressed */
   undefined,   /*!< The key press was not something we handle */
   error        /*!< If there is a problem with the key reader */
 };
@@ -90,4 +94,7 @@ private:
 
   //! Variables needed by the platform specific code
   PlatformVariables platform_vars_;
+
+  //! The key mapping to help with key inputs
+  std::map<KeyMapping, KeyPressed> key_map_;
 };
