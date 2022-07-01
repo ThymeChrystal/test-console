@@ -56,6 +56,10 @@ int TestConsole::start()
       std::cout << prompt_ << " " << std::flush;
       input = getUserInputLine();
       std::cout << "You typed: " << input << "\r\n";
+
+      // Save the history if it's not the same as the previous entry
+      if (history_.empty() || input != history_.back())
+        history_.push_back(input);
     }
   }
   catch (std::exception& e)
@@ -67,13 +71,19 @@ int TestConsole::start()
 }
 
 // Get the user input line
-std::string TestConsole::getUserInputLine()
+std::string TestConsole::getUserInputLine() const
 {
   // The line the user is entering
   std::string line{ "" };
 
   // Keep track of where the cursor is in the input line
   std::string::size_type cursor_pos = 0;
+
+  // The position we are in the history
+  std::size_t history_pos = history_.size();
+
+  // Keep the current line if we move through the history
+  std::string current_line{ "" };
 
   KeyPressed key_pressed = KeyPressed::undefined;
 
@@ -165,6 +175,42 @@ std::string TestConsole::getUserInputLine()
         else
           std::cout << "\a";
         break;
+      case KeyPressed::uparrow:
+        // If we're not already in the history, save the current line
+        if (history_pos == history_.size())
+          current_line = line;
+
+        // Check we're not at the top of the history
+        if (history_pos != 0)
+        {
+          // Move to the previous history place
+          --history_pos;
+
+          std::string new_line = history_[history_pos];
+          replaceLine(line.size(), new_line, cursor_pos);
+          line = new_line;
+          cursor_pos = line.size();
+        }
+        else 
+          std::cout << '\a';  // If we're at the beginning of the history, just beep
+        break;
+      case KeyPressed::downarrow:
+        // Check we're not already at the endo of the history
+        if (history_pos != history_.size())
+        {
+          ++history_pos;
+          std::string new_line;
+          if (history_pos == history_.size())
+            new_line = current_line;
+          else
+            new_line = history_[history_pos];
+          replaceLine(line.size(), new_line, cursor_pos);
+          line = new_line;
+          cursor_pos = line.size();
+        }
+        else
+          std::cout << '\a'; // If we're at the end of the history, just beep
+        break;
       case KeyPressed::del:
         // Check we're not at the end of the string
         if (cursor_pos != line.size())
@@ -179,6 +225,9 @@ std::string TestConsole::getUserInputLine()
         else
           std::cout << "\a";
         break;
+      case KeyPressed::tab:
+        std::cout << "\r\nTab Pressed!\r\n";
+        break;
       case KeyPressed::error:
         throw std::runtime_error("There was an error when processing key inputs");
         break;
@@ -191,5 +240,24 @@ std::string TestConsole::getUserInputLine()
     std::cout << std::flush;
   }
   return line;
+}
+
+// Replace one line on the display with another
+void TestConsole::replaceLine(const std::string::size_type& old_line_size, const std::string& new_line,
+  const std::string::size_type& cur_pos) const
+{
+  // Check if we need to clear part of the line
+  std::string spaces{ "" };
+  std::string back_spaces{ "" };
+  int diff = old_line_size - new_line.size();
+  if (diff > 0)
+  {
+    spaces = std::string(diff, ' ');
+    back_spaces = std::string(diff, '\b');
+  }
+
+  // Move to the start of the line, and then overwrite the line,
+  // then move the cursor back over any spaces
+  std::cout << std::string(cur_pos, '\b') << new_line << spaces << back_spaces;
 }
 

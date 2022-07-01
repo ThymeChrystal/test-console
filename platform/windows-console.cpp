@@ -96,14 +96,17 @@ void TestConsole::initialisePlatformVariables()
 
   // Initialise the key mapping
   key_map_[8] = KeyPressed::backspace;
+  key_map_[9] = KeyPressed::tab;
   key_map_[13] = KeyPressed::enter;
   key_map_[37] = KeyPressed::leftarrow;
+  key_map_[38] = KeyPressed::uparrow;
   key_map_[39] = KeyPressed::rightarrow;
+  key_map_[40] = KeyPressed::downarrow;
   key_map_[46] = KeyPressed::del;
 }
 
 // This handles the windows specific code
-std::vector<std::tuple<KeyPressed, char>> TestConsole::getKeyPresses()
+std::vector<std::tuple<KeyPressed, char>> TestConsole::getKeyPresses() const
 {
   // The return value
   std::vector<std::tuple<KeyPressed, char>> ret;
