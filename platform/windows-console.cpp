@@ -51,23 +51,23 @@ namespace
 {
 
   // Handle the key press events
-  std::tuple<KeyPressed, char, unsigned int> HandleConsoleKeyEvent(KEY_EVENT_RECORD ke)
+  std::tuple<KeyPressed, char, unsigned int> HandleConsoleKeyEvent(KEY_EVENT_RECORD ke, 
+    const std::map<KeyMapping, KeyPressed>& key_map)
   {
     // Handle keys if they are down
     if (ke.bKeyDown)
     {
       // If it's in the ASCII printable range, print it (maybe multiple times
       // based on repeat count)
-      if (ke.uChar.AsciiChar >= 32 && ke.uChar.AsciiChar <= 127)
+      if (ke.uChar.AsciiChar >= 32 && ke.uChar.AsciiChar <= 126)
         return std::make_tuple(KeyPressed::alphanum, ke.uChar.AsciiChar, ke.wRepeatCount);
       
-      // Handle a backspace press
-      if (ke.wVirtualKeyCode == 8)
-        return std::make_tuple(KeyPressed::backspace, '\0', ke.wRepeatCount);
-
-      // Enter pressed, so finish this input line
-      if (ke.wVirtualKeyCode == 13)
-        return std::make_tuple(KeyPressed::enter, '\0', ke.wRepeatCount);
+      auto key = key_map.find(ke.wVirtualKeyCode);
+      if (key != key_map.end())
+      {
+        return std::make_tuple(key->second, '\0', ke.wRepeatCount);
+      }
+      std::cout << "\nKey code: " << ke.wVirtualKeyCode << "\n";
     }
    
     return std::make_tuple(KeyPressed::undefined, '\0', 0);
@@ -93,6 +93,13 @@ void TestConsole::initialisePlatformVariables()
   // Set our console mode. We add the mouse in case we need it
   if (!SetConsoleMode(platform_vars_.stdcin_handle, ENABLE_WINDOW_INPUT | ENABLE_MOUSE_INPUT))
     throw std::runtime_error("Unable to set the new console mode");
+
+  // Initialise the key mapping
+  key_map_[8] = KeyPressed::backspace;
+  key_map_[13] = KeyPressed::enter;
+  key_map_[37] = KeyPressed::leftarrow;
+  key_map_[39] = KeyPressed::rightarrow;
+  key_map_[46] = KeyPressed::del;
 }
 
 // This handles the windows specific code
@@ -121,7 +128,7 @@ std::vector<std::tuple<KeyPressed, char>> TestConsole::getKeyPresses()
     {
     case KEY_EVENT: // Handle keyboard inputs
       {
-        auto [kp, c, rep] = HandleConsoleKeyEvent(event_buffer[i].Event.KeyEvent);
+        auto [kp, c, rep] = HandleConsoleKeyEvent(event_buffer[i].Event.KeyEvent, key_map_);
         ret.insert(ret.end(), rep, std::make_tuple(kp, c));
         break;
       }

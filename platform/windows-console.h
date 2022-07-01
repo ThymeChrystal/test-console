@@ -42,3 +42,6 @@ struct PlatformVariables
   //! Buffer size for input events
   static const unsigned int input_buffer_size = 128;
 };
+
+//! Key mappings type
+using KeyMapping = WORD;
