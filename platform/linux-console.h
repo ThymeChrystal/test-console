@@ -28,6 +28,7 @@
 #pragma once
 
 #include <termios.h>
+#include <string>
 
 //! Define a struct to hold variables needed by the windows console
 struct PlatformVariables
@@ -35,3 +36,6 @@ struct PlatformVariables
   //! Save the original console mode
   struct termios old_state;
 };
+
+//! A key mapping type
+using KeyMapping = std::string;

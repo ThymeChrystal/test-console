@@ -67,7 +67,8 @@
 
 namespace
 {
-  std::tuple<KeyPressed, char> handleConsoleKeyEvent(const std::string& input)
+  std::tuple<KeyPressed, char> handleConsoleKeyEvent(const std::string& input,
+    const std::map<KeyMapping, KeyPressed>& key_map)
   {
     std::tuple<KeyPressed, char> ret;
 
@@ -76,10 +77,10 @@ namespace
 
     if (input[0] >= 32 && input[0] <= 126) // ASCII printable characters
       return std::make_tuple(KeyPressed::alphanum, input[0]);
-    else if (input[0] == 13)               // Return pressed
-      return std::make_tuple(KeyPressed::enter, '\0');
-    else if (input[0] == 127)              // Backspace
-      return std::make_tuple(KeyPressed::backspace, '\0');
+
+    auto km = key_map.find(input);
+    if (km != key_map.end())
+      return std::make_tuple(km->second, '\0');
 
     // Return that we don't know the code
     return std::make_tuple(KeyPressed::undefined, '\0');
@@ -119,6 +120,18 @@ void TestConsole::initialisePlatformVariables()
   // Set these new parameters
   if (tcsetattr(0, TCSANOW, &tbuf) == -1)
     throw std::runtime_error("Unable to set new console state with tcsetattr()");
+
+  // Set up the key mappings
+  const std::string ret(1, 13);
+  const std::string bsp(1, 127);
+  const std::string esc(1, 27);
+
+  key_map_[ret] = KeyPressed::enter;
+  key_map_[bsp] = KeyPressed::backspace;
+  key_map_[esc + "[D"] = KeyPressed::leftarrow;
+  key_map_[esc + "[C"] = KeyPressed::rightarrow;
+  key_map_[esc + "[3~"] = KeyPressed::del;
+
 }
 
 // This has the linux specific code
@@ -142,7 +155,7 @@ std::vector<std::tuple<KeyPressed, char>> TestConsole::getKeyPresses()
   {
     inp += (char)getchar();
   }
-  ret.push_back(handleConsoleKeyEvent(inp));
+  ret.push_back(handleConsoleKeyEvent(inp, key_map_));
   
   return ret;
 }
