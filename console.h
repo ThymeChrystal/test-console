@@ -41,8 +41,11 @@ enum class KeyPressed
   enter,       /*!< Enter (or related key) was pressed */
   backspace,   /*!< Backspace was pressed */
   del,         /*!< The Delete (or Del) key was pressed */
+  tab,         /*!< The Tab key was pressed */
   leftarrow,   /*!< The left arrow key was pressed */
   rightarrow,  /*!< The right arrow key was pressed */
+  uparrow,     /*!< The up arrow key was pressed */
+  downarrow,   /*!< The down arrow key was pressed */
   undefined,   /*!< The key press was not something we handle */
   error        /*!< If there is a problem with the key reader */
 };
@@ -73,16 +76,24 @@ private:
    */
   void initialisePlatformVariables();
 
-  /* Get the next line of input from the user
+  /*! Get the next line of input from the user
    * \return The line entered by the user at the command line
    */
-  std::string getUserInputLine();
+  std::string getUserInputLine() const;
+
+  /*! Show a new line on the display
+   * \param old_line_size The length of the line we're replacing
+   * \param new_line The line to replace the existing line
+   * \param cur_pos The current position of the cursor in the line
+   */
+  void replaceLine(const std::string::size_type& old_line, const std::string& new_line,
+    const std::string::size_type& cur_pos) const;
 
   /*! Get the next keypress
    * \returns A vector containing the key types and a char. If the key isn't alphanumeric, the char will be '\0'
    * \note This is implemented specific to the platform
    */
-  std::vector<std::tuple<KeyPressed, char>> getKeyPresses();
+  std::vector<std::tuple<KeyPressed, char>> getKeyPresses() const;
 
   /*! Clean up the platform specific console
    * \note This is implemented specific to the platform
@@ -97,4 +108,7 @@ private:
 
   //! The key mapping to help with key inputs
   std::map<KeyMapping, KeyPressed> key_map_;
+
+  //! The history
+  std::vector<std::string> history_;
 };
