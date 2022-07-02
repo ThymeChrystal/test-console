@@ -55,7 +55,16 @@ int TestConsole::start()
       // Flush to make sure the prompt is shown
       std::cout << prompt_ << " " << std::flush;
       input = getUserInputLine();
-      std::cout << "You typed: " << input << "\r\n";
+
+      // Not a fully featured history, but
+      // we can show what's in the list
+      if (input == "history")
+      {
+        for (auto h : history_)
+          std::cout << h << "\r\n";
+      }
+      else
+        std::cout << "You typed: " << input << "\r\n";
 
       // Save the history if it's not the same as the previous entry
       if (history_.empty() || input != history_.back())
