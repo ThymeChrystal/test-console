@@ -33,10 +33,43 @@
 #include <exception>
 #include <tuple>
 
-// Construct the console
-TestConsole::TestConsole(const std::string& prompt) : prompt_{ prompt }
+namespace
 {
-  initialisePlatformVariables();
+  //! The set of valid characters for our commands
+  const std::string VALID_COMM_CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_";
+}
+
+// Construct the console
+TestConsole::TestConsole(const std::string& prompt) : 
+  prompt_{ prompt },
+  completion_trie_(VALID_COMM_CHARS)
+{
+  initialisePlatformVariables();  
+  
+  // Set up some commands - the key is the command name and the value is a string
+  // that's printed when the command is called
+  commands_["hello"] = "Hello! How are you?";
+  commands_["help"] = "Sorry. I can't help you!";
+  commands_["apple"] = "Banana!";
+  commands_["append"] = "Did you mean upend?\r\n \\/\r\n-[]-\r\n ()";
+  commands_["quit"] = "Thanks for dropping by!";
+  commands_["quick"] = "I'm going as fast as I can!";
+  commands_["sugar"] = "Hi, honey!";
+  commands_["send"] = "Received!";
+  commands_["snooze"] = "Zzzzzzzzzzzz...";
+  commands_["point"] = "It's rude to point!";
+  commands_["change"] = "Change is good - what would you like to change?";
+  commands_["challenge"] = "Created in 1990, what was the name of the first internet search engine?";
+  commands_["ping"] = "Pong";
+  commands_["ring"] = "Who ya gonna call?";
+  commands_["xray"] = "You saw right through me!";
+
+  // Add the commands to the auto completion trie
+  for (auto &c : commands_)
+    completion_trie_.insert(c.first);
+
+  // Add the special 'history' command
+  completion_trie_.insert("history");
 }
 
 // Start the console
@@ -60,14 +93,20 @@ int TestConsole::start()
       // we can show what's in the list
       if (input == "history")
       {
-        for (auto h : history_)
+        for (auto &h : history_)
           std::cout << h << "\r\n";
       }
       else
-        std::cout << "You typed: " << input << "\r\n";
+      {
+        auto cmd = commands_.find(input);
+        if (cmd != commands_.end())
+          std::cout << cmd->second << "\r\n";
+        else if (input != "")
+          std::cout << "Command '" << input << "' not found.\r\n";
+      }
 
       // Save the history if it's not the same as the previous entry
-      if (history_.empty() || input != history_.back())
+      if (input != "" && (history_.empty() || input != history_.back()))
         history_.push_back(input);
     }
   }
@@ -96,10 +135,13 @@ std::string TestConsole::getUserInputLine() const
 
   KeyPressed key_pressed = KeyPressed::undefined;
 
+  // Allow detection of two tab presses to show list of commands
+  bool tab_pressed = false;
+
   while (key_pressed != KeyPressed::enter)
   {
     std::vector<std::tuple<KeyPressed, char>> keys = getKeyPresses();
-    for (auto k : keys)
+    for (auto &k : keys)
     {
       key_pressed = std::get<0>(k);
 
@@ -235,14 +277,55 @@ std::string TestConsole::getUserInputLine() const
           std::cout << "\a";
         break;
       case KeyPressed::tab:
-        std::cout << "\r\nTab Pressed!\r\n";
-        break;
+        {
+          // Get what we can complete - if this is the second tab press, show available
+          // commands
+          auto [n_paths, completion, all_cmds] = completion_trie_.find(line, tab_pressed);
+
+          // If this was a double tab, show the commands
+          if (tab_pressed)
+          {
+            std::cout << "\r\n";
+            if (all_cmds.empty())
+              std::cout << "No commands match '" << line << "' for tab completion\r\n";
+            else
+            {
+              for (auto c : all_cmds)
+                std::cout << c << "\r\n";
+            }
+            tab_pressed = false;
+            std::cout << prompt_ << " " << line;
+          }
+          else
+          {
+            // Check the partial command exists in the trie and if it does,
+            // show it. Otherwise, sound a bell
+            // If the completion is the same as the line, then it's too ambiguous to
+            // add anything
+            if (n_paths > 0 && completion != line)
+            {
+              replaceLine(line.size(), completion, cursor_pos);
+              line = completion;
+              cursor_pos = line.size();
+            }
+            else
+            {
+              std::cout << "\a";
+              tab_pressed = true; // Only mark as pressed if we did no completion
+            }
+          }
+          break;
+        }
       case KeyPressed::error:
         throw std::runtime_error("There was an error when processing key inputs");
         break;
       default: // Anything else, we can just ignore!
         break;
       }
+      
+      // Clear the tab press if the user did anything else
+      if (key_pressed != KeyPressed::tab)
+        tab_pressed = false;
     }
 
     // Make sure anything we've done is updated

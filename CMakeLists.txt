@@ -53,11 +53,13 @@ configure_file(${CMAKE_SOURCE_DIR}/platform/console-platform.h.in console-platfo
 set(TEST_CONSOLE_SOURCES
   main.cpp
   console.cpp
+  trie.cpp
   ${PLATFORM_SOURCES}
 )
 
 set(TEST_CONSOLE_HEADERS
   console.h
+  trie.h
   ${CMAKE_BINARY_DIR}/console-platform.h
   ${PLATFORM_HEADERS}
 )
