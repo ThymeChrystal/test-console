@@ -25,8 +25,11 @@
  * SOFTWARE.
  */
 
+#pragma once
+
 // Test console includes
 #include <console-platform.h>
+#include <trie.h>
 
 // STL includes
 #include <string>
@@ -72,12 +75,14 @@ public:
 
 private:
   /*! Initialise the platform specific variables for this class
+   * /throws std::runtime_error There was a problem initialising the platform's console 
    * /note This is implemented specific to the platform
    */
   void initialisePlatformVariables();
 
   /*! Get the next line of input from the user
    * \return The line entered by the user at the command line
+   * \throws std::runtime_error If there is a problem with the input processing
    */
   std::string getUserInputLine() const;
 
@@ -91,6 +96,7 @@ private:
 
   /*! Get the next keypress
    * \returns A vector containing the key types and a char. If the key isn't alphanumeric, the char will be '\0'
+   * \throws std::runtime_error There is a problem processing key presses
    * \note This is implemented specific to the platform
    */
   std::vector<std::tuple<KeyPressed, char>> getKeyPresses() const;
@@ -111,4 +117,11 @@ private:
 
   //! The history
   std::vector<std::string> history_;
+
+  //! Our command trie for <Tab> completion
+  CommandTrie completion_trie_;
+
+  //! Some commands - each command just prints a message 
+  //! (this isn't really the way to represent commands!)
+  std::map<std::string, std::string> commands_;
 };
